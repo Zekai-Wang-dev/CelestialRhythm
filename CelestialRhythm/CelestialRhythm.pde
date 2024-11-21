@@ -2,6 +2,13 @@ ArrayList<Note> notes = new ArrayList<Note>();
 
 int[] colorOfBox = new int[4];
 
+boolean dpressed = false;
+boolean fpressed = false;
+boolean jpressed = false;
+boolean kpressed = false;
+
+boolean released = false; 
+
 //X: 300 (First Row) 
 //X: 350 (Second Row) 
 //X: 400 (Third Row)
@@ -121,7 +128,7 @@ void checkNotePressed(int col) {
   
   //Checks where the note is pressed and determines the points you got or if you missed
   if (notes.size() > 0 && notesExist == true) {
-    
+        
     float noteH = notes.get(indexOfClosest).getH(); 
     float notefY = notes.get(indexOfClosest).getPos().y + noteH/2; 
     float notebY = notes.get(indexOfClosest).getPos().y - noteH/2; 
@@ -131,31 +138,31 @@ void checkNotePressed(int col) {
       println("Miss"); 
       
     }
-    else if (notefY > 520 - noteH && notefY < 520) {
+    else if (notefY > 520 - noteH - 15 && notefY < 520) {
      
       println("Ok"); 
       notes.remove(indexOfClosest); 
       
     }
-    else if (notefY > 520 && notefY < 520 + noteH/2) {
+    else if (notefY > 520 - 35 && notefY < 520) {
      
       println("Great"); 
       notes.remove(indexOfClosest); 
       
     }
-    else if (notebY > 520 - 10 && notefY < 640 + 10) {
+    else if (notebY > 520 - 25 && notefY < 640 + 20) {
      
       println("Perfect"); 
       notes.remove(indexOfClosest); 
       
     }
-    else if (notebY < 640 && notefY > 640) {
+    else if (notebY < 640 + 35 && notefY > 640) {
      
       println("Great"); 
       notes.remove(indexOfClosest); 
       
     }
-    else if (notebY < 640 + noteH && notefY > 640) {
+    else if (notebY < 640 + noteH + 15 && notefY > 640) {
      
       println("Ok"); 
       notes.remove(indexOfClosest); 
@@ -173,29 +180,33 @@ void checkNotePressed(int col) {
 
 void keyPressed() {
   
-  if (key == 'd') {
+  if (key == 'd' && dpressed == false) {
     
     colorOfBox[0] = 255;
     checkNotePressed(1); 
+    dpressed = true; 
     
   }
-  if (key == 'f') {
+  if (key == 'f' && fpressed == false) {
     
     colorOfBox[1] = 255;
     checkNotePressed(2); 
+    fpressed = true; 
 
   }
-  if (key == 'j') {
+  if (key == 'j' && jpressed == false) {
     
     colorOfBox[2] = 255;
     checkNotePressed(3); 
+    jpressed = true; 
 
   }
-  if (key == 'k') {
+  if (key == 'k' && kpressed == false) {
     
     colorOfBox[3] = 255;
     checkNotePressed(4); 
-
+    kpressed = true; 
+    
   }
   
   
@@ -207,24 +218,28 @@ void keyReleased() {
     
     colorOfBox[0] = 150;
     checkNotePressed(1); 
+    dpressed = false; 
 
   }
   if (key == 'f') {
     
     colorOfBox[1] = 150;
     checkNotePressed(2); 
+    fpressed = false; 
 
   }
   if (key == 'j') {
     
     colorOfBox[2] = 150;
     checkNotePressed(3); 
+    jpressed = false; 
 
   }
   if (key == 'k') {
     
     colorOfBox[3] = 150;
     checkNotePressed(4); 
+    kpressed = false; 
 
   }
   
