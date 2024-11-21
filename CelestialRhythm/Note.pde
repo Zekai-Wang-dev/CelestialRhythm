@@ -62,9 +62,7 @@ class Note {
   public void drawNote() {
     
     float s = millis()/1000.0; 
-    
-    println(s); 
-    
+        
     if (s >= wait) {
       
       pos.add(vel.copy()); 
@@ -79,6 +77,24 @@ class Note {
       ellipse(pos.x + 25, pos.y, w, h); 
     
     }
+  }
+  
+  public int getCol() {
+    
+    return col; 
+    
+  }
+  
+  public PVector getPos() {
+    
+    return pos; 
+    
+  }
+  
+  public float getH() {
+    
+    return h; 
+    
   }
   
   public void setSpeed(float newSpeed) {

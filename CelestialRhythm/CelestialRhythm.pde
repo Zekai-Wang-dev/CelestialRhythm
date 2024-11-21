@@ -1,5 +1,7 @@
 ArrayList<Note> notes = new ArrayList<Note>(); 
 
+int[] colorOfBox = new int[4];
+
 //X: 300 (First Row) 
 //X: 350 (Second Row) 
 //X: 400 (Third Row)
@@ -9,6 +11,14 @@ void setup() {
   
   size(800, 800); 
   
+  //Initial color of the finish line boxes
+  for (int i = 0; i < 4; i++) {
+    
+    colorOfBox[i] = 150;  
+    
+  }
+  
+  //Notes for testing
   notes.add(new Note(1, 1.0)); 
   notes.add(new Note(2, 1.5)); 
   notes.add(new Note(3, 2.0)); 
@@ -25,15 +35,8 @@ void draw() {
   
   background(255); 
   
-  //Draw the notes
-  for (int i = 0; i < notes.size(); i++) {
-    
-    notes.get(i).drawNote();    
-    
-  }
-  
   //Note path background
-  fill(1, 1, 1, 100);
+  fill(150);
   quad(300, 0, 500, 0, 800, 800, 0, 800); 
   
   //Note seperation 1
@@ -47,5 +50,182 @@ void draw() {
   //Note seperation 3
   stroke(1); 
   line(450, 0, 600, 800); 
+  
+  //Finish box col 1
+  stroke(1);
+  fill(colorOfBox[0]); 
+  quad(105, 520, 252.5, 520, 230, 640, 60, 640); 
+  
+  //Finish box col 2
+  stroke(1);
+  fill(colorOfBox[1]); 
+  quad(252.5, 520, 400, 520, 400, 640, 230, 640); 
+  
+  //Finish box col 3
+  stroke(1);
+  fill(colorOfBox[2]); 
+  quad(400, 520, 547.5, 520, 570, 640, 400, 640); 
+  
+  //Finish box col 4
+  stroke(1);
+  fill(colorOfBox[3]); 
+  quad(547.5, 520, 695, 520, 740, 640, 570, 640); 
+  
+  //Start of finish line
+  stroke(1); 
+  line(110, 520, 690, 520); 
+  
+  //End of finish line
+  stroke(1); 
+  line(60, 640, 740, 640); 
+  
+  //Draw the notes
+  for (int i = 0; i < notes.size(); i++) {
+    
+    notes.get(i).drawNote();    
+    
+  }
+  
+}
+
+void checkNotePressed(int col) {
+  
+  int indexOfClosest = 0; 
+  boolean notesExist = false; 
+  
+  //Initialize the closest note for the collumn
+  for (int i = 0; i < notes.size(); i++) {
+      
+      if (notes.get(i).getCol() == col) {
+        
+        indexOfClosest = i; 
+        notesExist = true; 
+        break;
+        
+      }
+      else
+        notesExist = false; 
+  }
+     
+  //Get the note that is closest so that user input only detects that note
+  for (int i = 0; i < notes.size(); i++) {
+    
+    if (notes.get(i).getCol() == col) {
+      if (520 - notes.get(i).getPos().y < 520 - notes.get(indexOfClosest).getPos().y) {
+        
+        indexOfClosest = i; 
+        
+      }
+    }
+  }
+  
+  //Checks where the note is pressed and determines the points you got or if you missed
+  if (notes.size() > 0 && notesExist == true) {
+    
+    float noteH = notes.get(indexOfClosest).getH(); 
+    float notefY = notes.get(indexOfClosest).getPos().y + noteH/2; 
+    float notebY = notes.get(indexOfClosest).getPos().y - noteH/2; 
+
+    if (notefY < 520 - noteH) {
+      
+      println("Miss"); 
+      
+    }
+    else if (notefY > 520 - noteH && notefY < 520) {
+     
+      println("Ok"); 
+      notes.remove(indexOfClosest); 
+      
+    }
+    else if (notefY > 520 && notefY < 520 + noteH/2) {
+     
+      println("Great"); 
+      notes.remove(indexOfClosest); 
+      
+    }
+    else if (notebY > 520 - 10 && notefY < 640 + 10) {
+     
+      println("Perfect"); 
+      notes.remove(indexOfClosest); 
+      
+    }
+    else if (notebY < 640 && notefY > 640) {
+     
+      println("Great"); 
+      notes.remove(indexOfClosest); 
+      
+    }
+    else if (notebY < 640 + noteH && notefY > 640) {
+     
+      println("Ok"); 
+      notes.remove(indexOfClosest); 
+      
+    }
+    else if (notebY > 640 + noteH) {
+     
+      println("Miss"); 
+      
+    }
+    
+  }
+  
+}
+
+void keyPressed() {
+  
+  if (key == 'd') {
+    
+    colorOfBox[0] = 255;
+    checkNotePressed(1); 
+    
+  }
+  if (key == 'f') {
+    
+    colorOfBox[1] = 255;
+    checkNotePressed(2); 
+
+  }
+  if (key == 'j') {
+    
+    colorOfBox[2] = 255;
+    checkNotePressed(3); 
+
+  }
+  if (key == 'k') {
+    
+    colorOfBox[3] = 255;
+    checkNotePressed(4); 
+
+  }
+  
+  
+}
+
+void keyReleased() {
+  
+  if (key == 'd') {
+    
+    colorOfBox[0] = 150;
+    checkNotePressed(1); 
+
+  }
+  if (key == 'f') {
+    
+    colorOfBox[1] = 150;
+    checkNotePressed(2); 
+
+  }
+  if (key == 'j') {
+    
+    colorOfBox[2] = 150;
+    checkNotePressed(3); 
+
+  }
+  if (key == 'k') {
+    
+    colorOfBox[3] = 150;
+    checkNotePressed(4); 
+
+  }
   
 }
