@@ -16,6 +16,7 @@ PImage author;
 //Boolean for which screen is selectebubbleScale
 boolean startingSc = true;
 boolean menuSc = false; 
+boolean gameSc = false; 
 
 //Initiate image variables
 PImage titleImage;
@@ -102,12 +103,16 @@ boolean fpressed = false;
 boolean jpressed = false;
 boolean kpressed = false;
 
+boolean released = false; 
+
 //Sixth button
 float selectSongX6 = 460;
 float selectSongY6 = 620;
 float selectSongW6 = 280;
 float selectSongH6 = 50;
-boolean released = false; 
+
+//Variable to restart time when song plays
+float reTime = 0; 
 
 //X: 300 (First Row) 
 //X: 350 (Second Row) 
@@ -169,12 +174,18 @@ void setup() {
   musicAuthor[5] = loadImage("Assets/TextFont/text-Denys_Brodovskyi.png"); 
   
   author = loadImage("Assets/TextFont/text-Author.png"); 
+  
   //Notes for testing
   notes.add(new Note(1, 1.0)); 
   notes.add(new Note(2, 1.5)); 
   notes.add(new Note(3, 2.0)); 
   notes.add(new Note(4, 2.5)); 
 
+  notes.get(0).setSpeed(0.5); 
+  notes.get(1).setSpeed(0.5); 
+  notes.get(2).setSpeed(0.5); 
+  notes.get(3).setSpeed(0.5); 
+  
   //Initiate the selected song so that the selected song is not nilW
   for (int i = 0; i < songSelected.length; i++) {
     
@@ -199,28 +210,89 @@ void setup() {
     
   }
   
+}
 
 void draw() {
     
-  //bubbleScaleraws the starting screen
+  //draws the starting screen
   if (startingSc == true) {
    
     drawStartScreen(); 
     
   }
   
-  //bubbleScaleraws the menu screen
+  //draws the menu screen
   else if (menuSc == true) {
     
     drawMenuScreen(); 
     
   }
   
+  //draws the gameplay screen
+  else if (gameSc == true) {
+    
+    drawGameScreen(); 
+    
+  }
+  
 }
-  notes.get(0).setSpeed(0.5); 
-  notes.get(1).setSpeed(0.5); 
-  notes.get(2).setSpeed(0.5); 
-  notes.get(3).setSpeed(0.5); 
+
+void drawGameScreen() {
+  
+  background(255); 
+  
+  //Note path background
+  fill(150);
+  quad(300, 0, 500, 0, 800, 800, 0, 800); 
+  
+  //Note Seperation 1
+  stroke(1); 
+  line(350, 0, 200, 800); 
+  
+  //Note Seperation 2
+  stroke(1);
+  line(400, 0, 400, 800); 
+  
+  //Note Seperation 3
+  stroke(1); 
+  line(450, 0, 600, 800); 
+  
+  //Finish box col 1
+  stroke(1);
+  fill(colorOfBox[0]); 
+  quad(105, 520, 252.5, 520, 230, 640, 60, 640); 
+  
+  //Finish box col 2
+  stroke(1);
+  fill(colorOfBox[1]); 
+  quad(252.5, 520, 400, 520, 400, 640, 230, 640); 
+  
+  //Finish box col 3
+  stroke(1);
+  fill(colorOfBox[2]); 
+  quad(400, 520, 547.5, 520, 570, 640, 400, 640); 
+  
+  //Finish box col 4
+  stroke(1);
+  fill(colorOfBox[3]); 
+  quad(547.5, 520, 695, 520, 740, 640, 570, 640); 
+  
+  //Start of finish line
+  stroke(1); 
+  line(110, 520, 690, 520); 
+  
+  //End of finish line
+  stroke(1); 
+  line(60, 640, 740, 640); 
+  
+  //Draw the notes
+  for (int i = 0; i < notes.size(); i++) {
+    
+    notes.get(i).drawNote(reTime);    
+    
+  }
+  
+}
 
 //Starting screen methobubbleScale
 void drawStartScreen() {
@@ -251,29 +323,24 @@ void drawStartScreen() {
   image(startButtonImage, -20, 200); 
   
 }
-}
 
-//Menu screen methobubbleScale
+//Menu screen menu
 void drawMenuScreen() {
   
   background(251, 255, 240); 
   
-  //BackgrounbubbleScale bubbles animation
+  //bubbles animation
   noStroke(); 
-  
+ 
   for (int i = 0; i < bubbles; i++) {
     
     //Bubble backgrounbubbleScale aura
     fill(240, 255, 255, 150);
     ellipse(bubblesX[i], 900-bubbleVelY[i]*frameCount%900, bubbleScale[i]*70, bubbleScale[i]*70); 
   
-  //Note path background
-  fill(1, 1, 1, 100);
     //Bubble bubbleScaleefault blue
     fill(219, 249, 255); 
     ellipse(bubblesX[i], 900-bubbleVelY[i]*frameCount%900, bubbleScale[i]*50, bubbleScale[i]*50); 
-  //Note path background
-  fill(150);
     
     //Bubble light white
     fill(255); 
@@ -401,40 +468,106 @@ void mousePressed() {
         
     startingSc = false; 
     menuSc = true; 
-  
-  //Finish box col 1
-  stroke(1);
-  fill(colorOfBox[0]); 
-  quad(105, 520, 252.5, 520, 230, 640, 60, 640); 
-  
-  //Finish box col 2
-  stroke(1);
-  fill(colorOfBox[1]); 
-  quad(252.5, 520, 400, 520, 400, 640, 230, 640); 
-  
-  //Finish box col 3
-  stroke(1);
-  fill(colorOfBox[2]); 
-  quad(400, 520, 547.5, 520, 570, 640, 400, 640); 
-  
-  //Finish box col 4
-  stroke(1);
-  fill(colorOfBox[3]); 
-  quad(547.5, 520, 695, 520, 740, 640, 570, 640); 
-  
-  //Start of finish line
-  stroke(1); 
-  line(110, 520, 690, 520); 
-  
-  //End of finish line
-  stroke(1); 
-  line(60, 640, 740, 640); 
-  
-  //Draw the notes
-  for (int i = 0; i < notes.size(); i++) {
     
-    notes.get(i).drawNote();    
+  }
+  
+  //Begin gameplay
+  if (menuSc == true && mouseX > playSongX && mouseX < playSongX + playSongW && mouseY > playSongY && mouseY < playSongY + playSongH) {
+        
+    reTime = millis()/1000.0; 
     
+    for (int i = 0; i < songSelected.length; i++) {
+      
+      if (songSelected[i] == true) {
+        
+        music[i].loop();
+        
+      }
+    }
+    
+    menuSc = false;
+    gameSc = true; 
+    
+  }
+  
+  //Select songs
+  if (menuSc == true && mouseX > selectSongX1 && mouseX < selectSongX1 + selectSongW1 && mouseY > selectSongY1 && mouseY < selectSongY1 + selectSongH1) {
+        
+    for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+       
+     }
+     
+     songSelected[0] = true; 
+     music[0].loop(); 
+     
+  }
+  else if (menuSc == true && mouseX > selectSongX2 && mouseX < selectSongX2 + selectSongW2 && mouseY > selectSongY2 && mouseY < selectSongY2 + selectSongH2) {
+    
+     for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+
+     }
+     
+     songSelected[1] = true; 
+     music[1].loop(); 
+
+  }
+  else if (menuSc == true && mouseX > selectSongX3 && mouseX < selectSongX3 + selectSongW3 && mouseY > selectSongY3 && mouseY < selectSongY3 + selectSongH3) {
+    
+     for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+
+     }
+     
+     songSelected[2] = true; 
+     music[2].loop(); 
+
+  }
+  else if (menuSc == true && mouseX > selectSongX4 && mouseX < selectSongX4 + selectSongW4 && mouseY > selectSongY4 && mouseY < selectSongY4 + selectSongH4) {
+    
+     for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+
+     }
+     
+     songSelected[3] = true; 
+     music[3].loop(); 
+
+  }
+  else if (menuSc == true && mouseX > selectSongX5 && mouseX < selectSongX5 + selectSongW5 && mouseY > selectSongY5 && mouseY < selectSongY5 + selectSongH5) {
+    
+     for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+
+     }
+     
+     songSelected[4] = true; 
+     music[4].loop(); 
+
+  }
+  else if (menuSc == true && mouseX > selectSongX6 && mouseX < selectSongX6 + selectSongW6 && mouseY > selectSongY6 && mouseY < selectSongY6 + selectSongH6) {
+    
+     for (int i = 0; i < songSelected.length; i++) {
+       
+       songSelected[i] = false; 
+       music[i].stop(); 
+
+     }
+     
+     songSelected[5] = true; 
+     music[5].loop(); 
+
   }
   
 }
@@ -532,87 +665,7 @@ void keyPressed() {
     
   }
   
-  
-  //Select songs
-  if (menuSc == true && mouseX > selectSongX1 && mouseX < selectSongX1 + selectSongW1 && mouseY > selectSongY1 && mouseY < selectSongY1 + selectSongH1) {
-        
-    for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-       
-     }
-     
-     songSelected[0] = true; 
-     music[0].loop(); 
   if (key == 'f' && fpressed == false) {
-    
-  }
-  else if (menuSc == true && mouseX > selectSongX2 && mouseX < selectSongX2 + selectSongW2 && mouseY > selectSongY2 && mouseY < selectSongY2 + selectSongH2) {
-    
-     for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-
-     }
-     
-     songSelected[1] = true; 
-     music[1].loop(); 
-
-  }
-  else if (menuSc == true && mouseX > selectSongX3 && mouseX < selectSongX3 + selectSongW3 && mouseY > selectSongY3 && mouseY < selectSongY3 + selectSongH3) {
-    
-     for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-
-     }
-     
-     songSelected[2] = true; 
-     music[2].loop(); 
-
-  }
-  else if (menuSc == true && mouseX > selectSongX4 && mouseX < selectSongX4 + selectSongW4 && mouseY > selectSongY4 && mouseY < selectSongY4 + selectSongH4) {
-    
-     for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-
-     }
-     
-     songSelected[3] = true; 
-     music[3].loop(); 
-
-  }
-  else if (menuSc == true && mouseX > selectSongX5 && mouseX < selectSongX5 + selectSongW5 && mouseY > selectSongY5 && mouseY < selectSongY5 + selectSongH5) {
-    
-     for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-
-     }
-     
-     songSelected[4] = true; 
-     music[4].loop(); 
-
-  }
-  else if (menuSc == true && mouseX > selectSongX6 && mouseX < selectSongX6 + selectSongW6 && mouseY > selectSongY6 && mouseY < selectSongY6 + selectSongH6) {
-    
-     for (int i = 0; i < songSelected.length; i++) {
-       
-       songSelected[i] = false; 
-       music[i].stop(); 
-
-     }
-     
-     songSelected[5] = true; 
-     music[5].loop(); 
-
-  }
 
     colorOfBox[1] = 255;
     checkNotePressed(2); 

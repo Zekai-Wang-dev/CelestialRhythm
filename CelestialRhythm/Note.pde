@@ -59,11 +59,11 @@ class Note {
   }
   
   //Draw the notes
-  public void drawNote() {
+  public void drawNote(float newTime) {
     
     float s = millis()/1000.0; 
         
-    if (s >= wait) {
+    if (s - newTime >= wait) {
       
       pos.add(vel.copy()); 
       vel.add(acc.copy()); 
