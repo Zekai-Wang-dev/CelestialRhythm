@@ -3,6 +3,9 @@ import processing.sound.*;
 //All 6 music files
 SoundFile[] music = new SoundFile[6]; 
 
+//Background for gameplay
+PImage gameBack[] = new PImage[6];
+
 //Icons for the music files
 PImage musicIcon[] = new PImage[6]; 
 
@@ -155,10 +158,18 @@ void setup() {
   //Initial color of the finish line boxes
   for (int i = 0; i < 4; i++) {
     
-    colorOfBox[i] = 150;  
+    colorOfBox[i] = 255;  
     
   }
   
+  //Setup all the background images for each music game
+  gameBack[0] = loadImage("Assets/hangzhou-8398789_1280.jpg"); 
+  gameBack[1] = loadImage("Assets/beach-6517214_1280.jpg"); 
+  gameBack[2] = loadImage("Assets/city-7458934_1280.jpg"); 
+  gameBack[3] = loadImage("Assets/demon-6374444_1280.jpg"); 
+  gameBack[4] = loadImage("Assets/background-6782458_1280.jpg"); 
+  gameBack[5] = loadImage("Assets/woman-1820868_1280.jpg"); 
+
   //Setup all the sound music
   music[0] = new SoundFile(this, "MusicFolder/creative-technology-showreel-241274.mp3"); 
   music[1] = new SoundFile(this, "MusicFolder/lazy-day-stylish-futuristic-chill-239287.mp3"); 
@@ -275,10 +286,19 @@ void drawGameScreen() {
   checkAccuracy(); 
   autoNoteRemoval(); 
   
-  background(255); 
+  //Song background; 
+  for (int i = 0; i < songSelected.length; i++) {
+    
+    if (songSelected[i] == true) {
+      
+      image(gameBack[i], 0, 0); 
+      
+    }
+    
+  }
   
   //Note path background
-  fill(150);
+  fill(255, 255, 255, 120);
   quad(300, 0, 500, 0, 800, 800, 0, 800); 
   
   //Note Seperation 1
@@ -328,7 +348,25 @@ void drawGameScreen() {
     
   }
   
+  //Shadow at the top
+  noStroke(); 
+  fill(1); 
+  rect(0, 0, 800, 10); 
+  
+  fill(1, 1, 1, 150); 
+  rect(0, 10, 800, 10); 
+  
+  fill(1, 1, 1, 100); 
+  rect(0, 20, 800, 10); 
+  
+  fill(1, 1, 1, 60); 
+  rect(0, 30, 800, 10); 
+  
+  fill(1, 1, 1, 10); 
+  rect(0, 40, 800, 10); 
+  
   //Draw the combo interface
+  stroke(1); 
   fill(100, 255, 255); 
   ellipse(680, 140, 120, 120); 
   
@@ -357,6 +395,7 @@ void drawGameScreen() {
     }
     else if (i == 2) {
       
+      fill(1); 
       text = "" + combo;
       textX = 670;
       textY = 150;
@@ -364,7 +403,6 @@ void drawGameScreen() {
 
     }
     
-    fill(1);
     text(text, textX, textY);
     
   }
@@ -1280,7 +1318,7 @@ void keyPressed() {
   
   if (key == 'd' && dpressed == false) {
     
-    colorOfBox[0] = 255;
+    colorOfBox[0] = 180;
     checkNotePressed(1); 
     dpressed = true; 
     
@@ -1288,21 +1326,21 @@ void keyPressed() {
   
   if (key == 'f' && fpressed == false) {
 
-    colorOfBox[1] = 255;
+    colorOfBox[1] = 180;
     checkNotePressed(2); 
     fpressed = true; 
 
   }
   if (key == 'j' && jpressed == false) {
     
-    colorOfBox[2] = 255;
+    colorOfBox[2] = 180;
     checkNotePressed(3); 
     jpressed = true; 
 
   }
   if (key == 'k' && kpressed == false) {
     
-    colorOfBox[3] = 255;
+    colorOfBox[3] = 180;
     checkNotePressed(4); 
     kpressed = true; 
     
@@ -1314,28 +1352,28 @@ void keyReleased() {
   
   if (key == 'd') {
     
-    colorOfBox[0] = 150;
+    colorOfBox[0] = 255;
     checkNoteReleased(1); 
     dpressed = false; 
 
   }
   if (key == 'f') {
     
-    colorOfBox[1] = 150;
+    colorOfBox[1] = 255;
     checkNoteReleased(2); 
     fpressed = false; 
 
   }
   if (key == 'j') {
     
-    colorOfBox[2] = 150;
+    colorOfBox[2] = 255;
     checkNoteReleased(3); 
     jpressed = false; 
 
   }
   if (key == 'k') {
     
-    colorOfBox[3] = 150;
+    colorOfBox[3] = 255;
     checkNoteReleased(4); 
     kpressed = false; 
 

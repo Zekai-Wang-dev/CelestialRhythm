@@ -104,7 +104,7 @@ class Note {
         prevNoteW = sameColNotes.get(currentIndex + 1).getW(); 
               
          //Draws the connection line 
-        fill(1); 
+        fill(150, 150, 150, 120); 
         stroke(1); 
         quad(pos.x - w/4 + 25, pos.y, pos.x + w/4 + 25, pos.y, prevNoteX + prevNoteW/4 + 25, prevNoteY, prevNoteX - prevNoteW/4 + 25, prevNoteY); 
     
