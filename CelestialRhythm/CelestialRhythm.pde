@@ -3,6 +3,9 @@ import processing.sound.*;
 //All 6 music files
 SoundFile[] music = new SoundFile[6]; 
 
+//Sound effect for a beat
+SoundFile beat; 
+
 //Background for gameplay
 PImage gameBack[] = new PImage[6];
 
@@ -110,8 +113,6 @@ boolean fpressed = false;
 boolean jpressed = false;
 boolean kpressed = false;
 
-boolean released = false; 
-
 //Sixth button
 float selectSongX6 = 460;
 float selectSongY6 = 620;
@@ -161,6 +162,9 @@ void setup() {
     colorOfBox[i] = 255;  
     
   }
+  
+  //Initialize sound effect for a button press
+  beat = new SoundFile(this, "MusicFolder/finger-snap-179180.mp3"); 
   
   //Setup all the background images for each music game
   gameBack[0] = loadImage("Assets/hangzhou-8398789_1280.jpg"); 
@@ -364,7 +368,7 @@ void readNoteFile() {
           
         }
         
-        println(index); 
+        println(time); 
 
         //Check if the note received is a long note or single note
         if (type == 'l') {
@@ -719,7 +723,9 @@ void autoNoteRemoval() {
   //Removes notes and automatic miss if they pass the 800 pixels in y value
   for (int i = 0; i < notes.size(); i++) {
     
-    if (notes.get(i).getY() > 800) {
+    if (notes.get(i).getY() - notes.get(i).getH()/2 > 800 + notes.get(i).getH()/2) {
+      
+      println(noteLongCheck[0]); 
       
       currentMiss++; 
       combo = 0; 
@@ -750,19 +756,19 @@ void autoNoteRemoval() {
       }
       
       //Removes the notes out of bounds
-      if (notes.get(i).isLong() && noteLongCheck[notes.get(i).getCol()-1] == false) {
+      if (notes.get(i).isLong() && noteLongCheck[outCol-1] == false) {
         
         currentMiss++; 
         notes.remove(secondNoteIndex); 
         notes.remove(i); 
 
       }
-      else if (notes.get(i).isLong() == false && noteLongCheck[notes.get(i).getCol()-1] == false) {
+      else if (notes.get(i).isLong() == false && noteLongCheck[outCol-1] == false) {
         
         notes.remove(i); 
 
       }
-      else if (notes.get(i).isLong() == false && noteLongCheck[notes.get(i).getCol()-1] == true) {
+      else if (notes.get(i).isLong() == false && noteLongCheck[outCol-1] == true) {
         
         notes.remove(i); 
         notes.remove(firstNoteIndex); 
@@ -772,26 +778,26 @@ void autoNoteRemoval() {
       
       //Sets back the index of each note 
       for (int j = 0; j < notes.size(); j++) {
-        if (notes.get(j).getCol() == outCol && tempNote.isLong() == false && noteLongCheck[notes.get(j).getCol()-1] == false) {
+        
+        if (notes.get(j).getCol() == outCol && tempNote.isLong() == false && noteLongCheck[outCol-1] == false) {
           
           notes.get(j).setIndex(notes.get(j).getIndex() - 1); 
           
-          
         }
-        else if (notes.get(j).getCol() == outCol && tempNote.isLong() == false && noteLongCheck[notes.get(j).getCol()-1] == true) {
+        else if (notes.get(j).getCol() == outCol && tempNote.isLong() == false && noteLongCheck[outCol-1] == true) {
             
-            notes.get(j).setIndex(notes.get(j).getIndex() - 2); 
-            
-            //Resets the type of note pressed              
-            noteLongCheck[notes.get(j).getCol()-1] = false; 
-             
+          notes.get(j).setIndex(notes.get(j).getIndex() - 2); 
+          
         }
         else if (notes.get(j).getCol() == outCol && tempNote.isLong()) {
           
           notes.get(j).setIndex(notes.get(j).getIndex() - 2); 
           
         }
+        
       }
+      noteLongCheck[outCol-1] = false; 
+         
       break; 
     }
     
@@ -840,7 +846,7 @@ void checkNoteReleased(int col) {
     boolean longNote = notes.get(indexOfFirst).isLong(); 
     
     
-    if (notefY >= 520 - 220 && notefY <= 520 - 140) {
+    if (notefY <= 520 - 140) {
       
       if (longNote == true) {
         
@@ -994,7 +1000,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notefY >= 520 + 260) {
+    else if (notefY >= 520 + 260 && notefY < 800) {
      
       
       if (longNote == true) {
@@ -1135,7 +1141,7 @@ void checkNotePressed(int col) {
     else if (notefY >= 520 - 60 && notefY <= 520 + 20) {
      
       
-      if (longNote == false && released == false) {
+      if (longNote == false) {
         
         combo += 1; 
         currentGreat++;
@@ -1211,7 +1217,7 @@ void checkNotePressed(int col) {
     else if (notefY >= 520 + 100 && notefY <= 520 + 180) {
      
       
-      if (longNote == false && released == false) {
+      if (longNote == false) {
         
         combo += 1; 
         points += 70*combo; 
@@ -1284,9 +1290,9 @@ void checkNotePressed(int col) {
 
       }
     }
-    else if (notefY >= 780) {
+    else if (notefY >= 520 + 260 && notefY < 800) {
      
-      if (longNote == false && released == false) {
+      if (longNote == false) {
         
         combo = 0; 
         currentMiss++;
@@ -1465,6 +1471,11 @@ void keyPressed() {
     colorOfBox[0] = 180;
     checkNotePressed(1); 
     dpressed = true; 
+    if (gameSc == true) {
+    
+      beat.play(); 
+    
+    }
     
   }
   
@@ -1473,6 +1484,11 @@ void keyPressed() {
     colorOfBox[1] = 180;
     checkNotePressed(2); 
     fpressed = true; 
+    if (gameSc == true) {
+    
+      beat.play(); 
+    
+    }
 
   }
   if (key == 'j' && jpressed == false) {
@@ -1480,6 +1496,11 @@ void keyPressed() {
     colorOfBox[2] = 180;
     checkNotePressed(3); 
     jpressed = true; 
+    if (gameSc == true) {
+    
+      beat.play(); 
+    
+    }
 
   }
   if (key == 'k' && kpressed == false) {
@@ -1487,6 +1508,11 @@ void keyPressed() {
     colorOfBox[3] = 180;
     checkNotePressed(4); 
     kpressed = true; 
+    if (gameSc == true) {
+    
+      beat.play(); 
+    
+    }
     
   }
   
