@@ -204,26 +204,7 @@ void setup() {
   
   author = loadImage("Assets/TextFont/text-Author.png"); 
   
-  //Notes for testing
-  notes.add(new Note(1, 1.0, false, 0)); 
-  notes.add(new Note(1, 1.5, true, 1)); 
-  notes.add(new Note(1, 3.5, false, 2)); 
-  notes.add(new Note(1, 4.2, true, 3)); 
-  notes.add(new Note(1, 4.7, false, 4)); 
-
-  notes.add(new Note(2, 1.5, true, 0)); 
-  notes.add(new Note(2, 2.5, false, 1)); 
-  notes.add(new Note(2, 4.5, true, 2)); 
-  notes.add(new Note(2, 5.5, false, 3)); 
-
-  notes.add(new Note(3, 2.0, false, 0));
-  notes.add(new Note(3, 2.3, true, 1));
-  notes.add(new Note(3, 2.5, false, 2));
-
-  notes.add(new Note(4, 1.5, true, 0)); 
-  notes.add(new Note(4, 2.5, false, 1)); 
-  notes.add(new Note(4, 3.0, false, 2)); 
-
+  //Set the original speed of the notes
   for (int i = 0; i < notes.size(); i++) {
     
     notes.get(i).setSpeed(0.5); 
@@ -254,6 +235,8 @@ void setup() {
     
   }
   
+  //Initialize the notes
+  readNoteFile(); 
 }
 
 void draw() {
@@ -279,6 +262,125 @@ void draw() {
     
   }
   
+}
+
+void readNoteFile() {
+  
+  //Reset everything in the notes store variable
+  while (notes.size() > 0) {
+    
+    notes.remove(0); 
+    
+  }
+  
+  String noteType; 
+  String[] colNotes; 
+  
+  char type;
+  float time;
+  int col; 
+  int index; 
+    
+  if (songSelected[0] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  else if (songSelected[1] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  else if (songSelected[2] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  else if (songSelected[3] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  else if (songSelected[4] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  else if (songSelected[5] == true) {
+    
+    noteReader = createReader("NoteFolder/Testing.txt"); 
+    
+  }
+  
+  
+  //Keep looping the reader until it reaches null
+  while (true) {
+    
+    try {
+      noteType = noteReader.readLine(); 
+    } catch (IOException e) {
+      
+      noteType = null; 
+    }
+    
+    if (noteType != null) {
+      
+      colNotes = split(noteType, ' '); 
+      
+      for (int i = 0; i < colNotes.length; i++) {
+        
+        if (colNotes[i].length() == 1) {
+          
+          continue;
+          
+        }
+        
+        boolean longOrNot = false; 
+        
+        type = colNotes[i].charAt(0); 
+        time = float(colNotes[i].substring(1, 6));
+        col = int(colNotes[i].charAt(7)); 
+        index = int(colNotes[i].substring(8, 11)); 
+        
+        //Convert the dec version of the character to the actual integer
+        if (col == 49) {
+          
+          col = 1; 
+          
+        }
+        else if (col == 50) {
+          
+          col = 2; 
+          
+        }
+        else if (col == 51) {
+          
+          col = 3; 
+          
+        }
+        else if (col == 52) {
+          
+          col = 4; 
+          
+        }
+        
+        println(index); 
+
+        //Check if the note received is a long note or single note
+        if (type == 'l') {
+          
+          longOrNot = true; 
+          
+        }
+        
+        notes.add(new Note(col, time, longOrNot, index)); 
+        
+      }
+      
+    }
+    else
+      break;
+  }
 }
 
 void drawGameScreen() {
@@ -332,6 +434,10 @@ void drawGameScreen() {
   stroke(1);
   fill(colorOfBox[3]); 
   quad(547.5, 520, 695, 520, 740, 640, 570, 640); 
+  
+  //Perfect line
+  fill(67, 67, 67, 120); 
+  rect(0, 540, 800, 80); 
   
   //Start of finish line
   stroke(1); 
@@ -617,7 +723,6 @@ void autoNoteRemoval() {
       
       currentMiss++; 
       combo = 0; 
-      currentMiss++; 
       totalNotesPlayed++; 
       
       outCol = notes.get(i).getCol(); 
@@ -647,6 +752,7 @@ void autoNoteRemoval() {
       //Removes the notes out of bounds
       if (notes.get(i).isLong() && noteLongCheck[notes.get(i).getCol()-1] == false) {
         
+        currentMiss++; 
         notes.remove(secondNoteIndex); 
         notes.remove(i); 
 
@@ -660,6 +766,7 @@ void autoNoteRemoval() {
         
         notes.remove(i); 
         notes.remove(firstNoteIndex); 
+        currentMiss++; 
 
       }
       
@@ -732,9 +839,8 @@ void checkNoteReleased(int col) {
     float notebY = notes.get(indexOfSecond).getPos().y - noteH/2; 
     boolean longNote = notes.get(indexOfFirst).isLong(); 
     
-    println(notefY + "_" + notebY);
     
-    if (notefY < 520 - noteH) {
+    if (notefY >= 520 - 220 && notefY <= 520 - 140) {
       
       if (longNote == true) {
         
@@ -745,6 +851,8 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         
+        println("miss"); 
+        
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -757,7 +865,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notefY > 520 - noteH && notefY < 520 - 15) {
+    else if (notefY >= 520 - 140 && notefY <= 520 - 60) {
      
       if (longNote == true) {
         
@@ -768,6 +876,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
+        println("ok"); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -781,7 +890,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notefY > 520 - 15 && notefY < 520 + 15) {
+    else if (notefY >= 520 - 60 && notefY <= 520 + 20) {
      
       
       if (longNote == true) {
@@ -793,7 +902,8 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
-        
+        println("great"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -806,7 +916,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notebY > 520 - 15 && notefY < 640 + 15) {
+    else if (notefY >= 520 + 20 && notefY <= 520 + 100) {
      
       
       if (longNote == true) {
@@ -818,6 +928,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
+        println("perfect"); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -831,7 +942,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notebY > 640 - 15 && notefY < 640 + 15) {
+    else if (notefY >= 520 + 100 && notefY <= 520 + 180) {
      
       
       if (longNote == true) {
@@ -843,6 +954,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
+        println("great"); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -856,7 +968,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notebY < 640 + noteH && notefY > 640 + 15) {
+    else if (notefY >= 520 + 180 && notefY <= 520 + 260) {
      
       
       if (longNote == true) {
@@ -868,6 +980,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
+        println("ok"); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -881,7 +994,7 @@ void checkNoteReleased(int col) {
       }
       
     }
-    else if (notebY > 640 + noteH) {
+    else if (notefY >= 520 + 260) {
      
       
       if (longNote == true) {
@@ -892,6 +1005,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
+        println("miss"); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -938,7 +1052,7 @@ void checkNotePressed(int col) {
     float notebY = notes.get(indexOfClosest).getPos().y - noteH/2; 
     boolean longNote = notes.get(indexOfClosest).isLong(); 
     
-    if (notefY < 520 - noteH && notebY > 400) {
+    if (notefY >= 520 - 220 && notefY <= 520 - 140) {
       
       
       if (longNote == false) {
@@ -948,7 +1062,8 @@ void checkNotePressed(int col) {
         totalNotesPlayed++; 
         noteLongCheck[col-1] = false;
         notes.remove(indexOfClosest); 
-        
+        println("miss"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -966,7 +1081,8 @@ void checkNotePressed(int col) {
         currentMiss++;
         totalNotesPlayed++; 
         noteLongCheck[col-1] = true;
-        
+        println("miss"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -978,7 +1094,7 @@ void checkNotePressed(int col) {
         
       }
     }
-    else if (notefY > 520 - noteH && notefY < 520 - 15) {
+    else if (notefY >= 520 - 140 && notefY <= 520 - 60) {
      
       
       if (longNote == false) {
@@ -989,7 +1105,8 @@ void checkNotePressed(int col) {
         points += 40*combo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
-        
+        println("ok"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1011,10 +1128,11 @@ void checkNotePressed(int col) {
         note.setSizeVel(0); 
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
+        println("ok"); 
 
       }
     }
-    else if (notefY > 520 - 15 && notefY < 520) {
+    else if (notefY >= 520 - 60 && notefY <= 520 + 20) {
      
       
       if (longNote == false && released == false) {
@@ -1025,7 +1143,8 @@ void checkNotePressed(int col) {
         points += 70*combo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
-        
+        println("great"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1047,10 +1166,11 @@ void checkNotePressed(int col) {
         note.setSizeVel(0); 
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
+        println("great"); 
 
       }
     }
-    else if (notebY > 520 - 15 && notefY < 640 + 15) {
+    else if (notefY >= 520 + 20 && notefY <= 520 + 100) {
      
       
       if (longNote == false) {
@@ -1061,7 +1181,8 @@ void checkNotePressed(int col) {
         points += 100*combo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
-        
+        println("perfect"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1083,10 +1204,11 @@ void checkNotePressed(int col) {
         note.setSizeVel(0); 
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
+        println("perfect"); 
 
       }
     }
-    else if (notebY < 640 + 15 && notefY > 640) {
+    else if (notefY >= 520 + 100 && notefY <= 520 + 180) {
      
       
       if (longNote == false && released == false) {
@@ -1097,7 +1219,8 @@ void checkNotePressed(int col) {
         currentGreat++;
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
-        
+        println("great"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1119,10 +1242,11 @@ void checkNotePressed(int col) {
         note.setSizeVel(0); 
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
+        println("great"); 
 
       }
     }
-    else if (notebY < 640 + noteH && notefY > 640 + 15) {
+    else if (notefY >= 520 + 180 && notefY >= 520 + 260) {
      
       if (longNote == false) {
         
@@ -1132,6 +1256,9 @@ void checkNotePressed(int col) {
         currentOk++;
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
+        println("ok"); 
+
+        
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1153,10 +1280,11 @@ void checkNotePressed(int col) {
         note.setSizeVel(0); 
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
+        println("ok"); 
 
       }
     }
-    else if (notebY > 640 + noteH && notefY < 800) {
+    else if (notefY >= 780) {
      
       if (longNote == false && released == false) {
         
@@ -1165,7 +1293,8 @@ void checkNotePressed(int col) {
         totalNotesPlayed++; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
-        
+        println("miss"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1182,7 +1311,8 @@ void checkNotePressed(int col) {
         totalNotesPlayed++; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = true;
-        
+        println("miss"); 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1222,7 +1352,14 @@ void mousePressed() {
       
       if (songSelected[i] == true) {
         
-        music[i].loop();
+        Delay delay = new Delay(this); 
+        
+        music[i].stop();
+        music[i].play();
+        
+        delay.process(music[i], 1.0);
+        delay.time(1.0); 
+        
         
       }
     }
@@ -1235,6 +1372,8 @@ void mousePressed() {
   //Select songs
   if (menuSc == true && mouseX > selectSongX1 && mouseX < selectSongX1 + selectSongW1 && mouseY > selectSongY1 && mouseY < selectSongY1 + selectSongH1) {
         
+    readNoteFile(); 
+    
     for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 
@@ -1247,7 +1386,8 @@ void mousePressed() {
      
   }
   else if (menuSc == true && mouseX > selectSongX2 && mouseX < selectSongX2 + selectSongW2 && mouseY > selectSongY2 && mouseY < selectSongY2 + selectSongH2) {
-    
+     readNoteFile(); 
+
      for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 
@@ -1260,7 +1400,8 @@ void mousePressed() {
 
   }
   else if (menuSc == true && mouseX > selectSongX3 && mouseX < selectSongX3 + selectSongW3 && mouseY > selectSongY3 && mouseY < selectSongY3 + selectSongH3) {
-    
+     readNoteFile(); 
+
      for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 
@@ -1273,7 +1414,8 @@ void mousePressed() {
 
   }
   else if (menuSc == true && mouseX > selectSongX4 && mouseX < selectSongX4 + selectSongW4 && mouseY > selectSongY4 && mouseY < selectSongY4 + selectSongH4) {
-    
+     readNoteFile(); 
+
      for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 
@@ -1286,7 +1428,8 @@ void mousePressed() {
 
   }
   else if (menuSc == true && mouseX > selectSongX5 && mouseX < selectSongX5 + selectSongW5 && mouseY > selectSongY5 && mouseY < selectSongY5 + selectSongH5) {
-    
+     readNoteFile(); 
+
      for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 
@@ -1299,7 +1442,8 @@ void mousePressed() {
 
   }
   else if (menuSc == true && mouseX > selectSongX6 && mouseX < selectSongX6 + selectSongW6 && mouseY > selectSongY6 && mouseY < selectSongY6 + selectSongH6) {
-    
+     readNoteFile(); 
+
      for (int i = 0; i < songSelected.length; i++) {
        
        songSelected[i] = false; 

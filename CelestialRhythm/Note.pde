@@ -66,11 +66,24 @@ class Note {
     
   }
   
+  int count = 0; 
+  float timeDisplacement = 0; 
   //Draw the notes
   public void drawNote(float newTime) {
     
     float s = millis()/1000.0; 
+    
+    //Add a displacement for loading time so that the notes from text file does not go early or late depending on someone's computer 
+    if (pos.y > 620 && count == 0) {
+      count++; 
+      if (s - newTime > 1.0 + timeDisplacement) {
         
+        timeDisplacement = (s - newTime) - 1; 
+        
+      }
+      
+    }
+
     if (s - newTime >= wait) {
       
       pos.add(vel.copy()); 
