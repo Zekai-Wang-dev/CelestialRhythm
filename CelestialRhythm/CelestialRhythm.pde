@@ -56,8 +56,11 @@ int[] miss = new int[6];
 int currentMiss = 0; 
 
 //Points system
-int points = 0; 
-int combo = 0; 
+int[] points = new int[6]; 
+int currentPoints = 0; 
+
+int[] combo = new int[6]; 
+int currentCombo = 0; 
 
 //Select Songs
 boolean[] songSelected = new boolean[6]; 
@@ -134,6 +137,9 @@ int totalNotesPlayed = 0;
 //Variable to check whether or not note pressed is a long note or a single note
 boolean noteLongCheck[] = new boolean[4]; 
 
+//Object for storing all the data
+DataStorage statData; 
+
 void setup() {
   
   size(800, 800); 
@@ -145,17 +151,6 @@ void setup() {
     
   }
   
-  //Initialize all the stats
-  for (int i = 0; i < 6; i++) {
-    
-    clear[i] = 0;
-    accuracy[i] = 0; 
-    perfect[i] = 0; 
-    great[i] = 0; 
-    ok[i] = 0;
-    miss[i] = 0; 
-    
-  }
   //Initial color of the finish line boxes
   for (int i = 0; i < 4; i++) {
     
@@ -163,6 +158,20 @@ void setup() {
     
   }
   
+  //Initiate data storage
+  statData = new DataStorage(clear, accuracy, perfect, great, ok, miss, points, combo); 
+  
+  //Read data from data storage
+  statData.loadData(); 
+  
+  //Initialize all the stats based on saved data
+  clear = statData.getClear();
+  accuracy = statData.getAcc();
+  perfect = statData.getPerfect();
+  great = statData.getGreat();
+  ok = statData.getOk();
+  miss = statData.getMiss();
+   
   //Initialize sound effect for a button press
   beat = new SoundFile(this, "MusicFolder/finger-snap-179180.mp3"); 
   
@@ -489,7 +498,7 @@ void drawGameScreen() {
     
     if (i == 0) {
       
-      text = "Points: " + points; 
+      text = "Points: " + currentPoints; 
       textX = 10;
       textY = 50;
       textSize(20);
@@ -506,7 +515,7 @@ void drawGameScreen() {
     else if (i == 2) {
       
       fill(1); 
-      text = "" + combo;
+      text = "" + currentCombo;
       textX = 670;
       textY = 150;
       textSize(40);
@@ -530,6 +539,29 @@ void drawGameScreen() {
     if (songSelected[i] == true) {
       
       musicPercentage = music[i].percent(); 
+      
+    }
+    if (musicPercentage >= 99 && songSelected[i] == true) {
+      
+      //Return to the menu screen
+      gameSc = false;
+      menuSc = true; 
+      
+      //Store all the points and accuracy
+      clear[i] += 1; 
+      accuracy[i] = currentAcc; 
+      miss[i] = currentMiss;
+      ok[i] = currentOk; 
+      great[i] = currentGreat; 
+      perfect[i] = currentPerfect; 
+      points[i] = currentPoints;
+      combo[i] = currentCombo; 
+      
+      //Store data to temporary storage
+      statData.tempStore(clear, accuracy, perfect, great, ok, miss, points, combo); 
+      
+      //Store data to file
+      statData.saveData(); 
       
     }
     
@@ -600,13 +632,14 @@ void drawMenuScreen() {
   rect(40, 150, 360, 310); 
   
   String stat = "Clears: "; 
+  int statNum = 0; 
   
   //All the stats for the music being played
   for (int i = 0; i < songSelected.length; i++) {
     
     if (songSelected[i] == true) {
 
-      for (int j = 0; j < songSelected.length; j++) {
+      for (int j = 0; j < 8; j++) {
         
         textSize(30); 
         fill(1); 
@@ -614,35 +647,53 @@ void drawMenuScreen() {
         if (j == 0) {
           
           stat = "Clear: "; 
+          statNum = clear[i]; 
           
         }
         else if (j == 1) {
           
           stat = "Accuracy: "; 
-          
+          statNum = accuracy[i]; 
+
         }
         else if (j == 2) {
           
           stat = "Perfect: ";
-          
+          statNum = perfect[i]; 
+
         }
         else if (j == 3) {
           
           stat = "Great: ";
-          
+          statNum = great[i]; 
+
         }
         else if (j == 4) {
           
           stat = "Ok: ";
-          
+          statNum = ok[i]; 
+
         }
         else if (j == 5) {
           
           stat = "Miss: ";
+          statNum = miss[i]; 
+
+        }
+        else if (j == 6) {
           
+          stat = "Points: ";
+          statNum = points[i]; 
+
+        }
+        else if (j == 7) {
+          
+          stat = "Combo: ";
+          statNum = combo[i]; 
+
         }
         
-        text(stat + clear[i], 150, 180 + 40*j); 
+        text(stat + statNum, 150, 180 + 40*j); 
         noFill(); 
           
       }
@@ -728,7 +779,7 @@ void autoNoteRemoval() {
       println(noteLongCheck[0]); 
       
       currentMiss++; 
-      combo = 0; 
+      currentCombo = 0; 
       totalNotesPlayed++; 
       
       outCol = notes.get(i).getCol(); 
@@ -850,7 +901,7 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        combo = 0; 
+        currentCombo = 0; 
         currentMiss++; 
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -875,8 +926,8 @@ void checkNoteReleased(int col) {
      
       if (longNote == true) {
         
-        points += 40*combo; 
-        combo += 1; 
+        currentPoints += 40*currentCombo; 
+        currentCombo += 1; 
         currentOk++;
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -901,8 +952,8 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        points += 70*combo; 
-        combo += 1; 
+        currentPoints += 70*currentCombo; 
+        currentCombo += 1; 
         currentGreat++; 
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -927,8 +978,8 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        points += 100*combo; 
-        combo += 1; 
+        currentPoints += 100*currentCombo; 
+        currentCombo += 1; 
         currentPerfect++; 
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -953,8 +1004,8 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        points += 70*combo; 
-        combo += 1; 
+        currentPoints += 70*currentCombo; 
+        currentCombo += 1; 
         currentGreat++; 
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -979,8 +1030,8 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        points += 40*combo; 
-        combo += 1; 
+        currentPoints += 40*currentCombo; 
+        currentCombo += 1; 
         currentOk++; 
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -1005,7 +1056,7 @@ void checkNoteReleased(int col) {
       
       if (longNote == true) {
         
-        combo = 0; 
+        currentCombo = 0; 
         currentMiss++;
         totalNotesPlayed++; 
         notes.remove(indexOfSecond); 
@@ -1063,7 +1114,7 @@ void checkNotePressed(int col) {
       
       if (longNote == false) {
         
-        combo = 0; 
+        currentCombo = 0; 
         currentMiss++;
         totalNotesPlayed++; 
         noteLongCheck[col-1] = false;
@@ -1082,7 +1133,7 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo = 0; 
+        currentCombo = 0; 
         notes.remove(indexOfClosest); 
         currentMiss++;
         totalNotesPlayed++; 
@@ -1105,10 +1156,10 @@ void checkNotePressed(int col) {
       
       if (longNote == false) {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentOk++;
         totalNotesPlayed++; 
-        points += 40*combo; 
+        currentPoints += 40*currentCombo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("ok"); 
@@ -1125,10 +1176,10 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentOk++;
         totalNotesPlayed++; 
-        points += 40*combo; 
+        currentPoints += 40*currentCombo; 
         note.setVel(new PVector(0, 0)); 
         note.setAcc(new PVector(0, 0)); 
         note.setSizeVel(0); 
@@ -1143,10 +1194,10 @@ void checkNotePressed(int col) {
       
       if (longNote == false) {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentGreat++;
         totalNotesPlayed++; 
-        points += 70*combo; 
+        currentPoints += 70*currentCombo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("great"); 
@@ -1163,10 +1214,10 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentGreat++;
         totalNotesPlayed++; 
-        points += 70*combo;
+        currentPoints += 70*currentCombo;
         note.setVel(new PVector(0, 0)); 
         note.setAcc(new PVector(0, 0)); 
         note.setSizeVel(0); 
@@ -1181,10 +1232,10 @@ void checkNotePressed(int col) {
       
       if (longNote == false) {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentPerfect++;
         totalNotesPlayed++; 
-        points += 100*combo; 
+        currentPoints += 100*currentCombo; 
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("perfect"); 
@@ -1201,10 +1252,10 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo += 1; 
+        currentCombo += 1; 
         currentPerfect++;
         totalNotesPlayed++; 
-        points += 100*combo; 
+        currentPoints += 100*currentCombo; 
         note.setVel(new PVector(0, 0)); 
         note.setAcc(new PVector(0, 0)); 
         note.setSizeVel(0); 
@@ -1219,8 +1270,8 @@ void checkNotePressed(int col) {
       
       if (longNote == false) {
         
-        combo += 1; 
-        points += 70*combo; 
+        currentCombo += 1; 
+        currentPoints += 70*currentCombo; 
         totalNotesPlayed++; 
         currentGreat++;
         notes.remove(indexOfClosest); 
@@ -1239,8 +1290,8 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo += 1; 
-        points += 70*combo; 
+        currentCombo += 1; 
+        currentPoints += 70*currentCombo; 
         totalNotesPlayed++; 
         currentGreat++;
         note.setVel(new PVector(0, 0)); 
@@ -1256,8 +1307,8 @@ void checkNotePressed(int col) {
      
       if (longNote == false) {
         
-        combo += 1; 
-        points += 40*combo; 
+        currentCombo += 1; 
+        currentPoints += 40*currentCombo; 
         totalNotesPlayed++; 
         currentOk++;
         notes.remove(indexOfClosest); 
@@ -1277,8 +1328,8 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true)  {
         
-        combo += 1; 
-        points += 40*combo; 
+        currentCombo += 1; 
+        currentPoints += 40*currentCombo; 
         totalNotesPlayed++; 
         currentOk++;
         note.setVel(new PVector(0, 0)); 
@@ -1294,7 +1345,7 @@ void checkNotePressed(int col) {
      
       if (longNote == false) {
         
-        combo = 0; 
+        currentCombo = 0; 
         currentMiss++;
         totalNotesPlayed++; 
         notes.remove(indexOfClosest); 
@@ -1312,7 +1363,7 @@ void checkNotePressed(int col) {
       }
       else if (longNote == true) {
         
-        combo = 0; 
+        currentCombo = 0; 
         currentMiss++;
         totalNotesPlayed++; 
         notes.remove(indexOfClosest); 
@@ -1465,6 +1516,26 @@ void mousePressed() {
 }
 
 void keyPressed() {
+  
+  //Exit music
+  if (key == BACKSPACE && gameSc == true) {
+    
+    gameSc = false;
+    menuSc = true; 
+    
+    //Stop the music from playing
+    for (int i = 0; i < songSelected.length; i++) {
+      
+      if (songSelected[i] == true) {
+        
+        music[i].stop(); 
+        music[i].loop(); 
+        
+      }
+      
+    }
+    
+  }
   
   if (key == 'd' && dpressed == false) {
     
