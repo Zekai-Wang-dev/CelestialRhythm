@@ -31,6 +31,11 @@ float scale = 0.5;
 //Drawing variable for calculating width of the rectnagles
 float barWidth; 
 
+//Image text for restart button and "YOU LOST"
+PImage loseIcon;
+
+PImage restartIcon; 
+
 //Background for gameplay
 PImage gameBack[] = new PImage[6];
 
@@ -48,6 +53,7 @@ PImage author;
 boolean startingSc = true;
 boolean menuSc = false; 
 boolean gameSc = false; 
+boolean loseSc = false; 
 
 //Initiate image variables
 PImage titleImage;
@@ -86,6 +92,9 @@ int currentPoints = 0;
 
 int[] combo = new int[6]; 
 int currentCombo = 0; 
+
+//Lose/win condition
+int missCombo = 0; 
 
 //Select Songs
 boolean[] songSelected = new boolean[6]; 
@@ -147,6 +156,12 @@ float selectSongY6 = 620;
 float selectSongW6 = 280;
 float selectSongH6 = 50;
 
+//Restart button
+float restartX = 250; 
+float restartY = 500; 
+float restartW = 300; 
+float restartH = 50; 
+
 //Variable to restart time when song plays
 float reTime = 0; 
 
@@ -205,6 +220,10 @@ void setup() {
    
   //Initialize sound effect for a button press
   beat = new SoundFile(this, "MusicFolder/finger-snap-179180.mp3"); 
+  
+  //Setup the icons for the lost screen
+  loseIcon = loadImage("Assets/TextFont/YOU LOST.png"); 
+  restartIcon = loadImage("Assets/TextFont/RESTART.png"); 
   
   //Setup all the background images for each music game
   gameBack[0] = loadImage("Assets/hangzhou-8398789_1280.jpg"); 
@@ -311,6 +330,13 @@ void draw() {
   else if (gameSc == true) {
     
     drawGameScreen(); 
+    
+  }
+  
+  //draws the lose screen
+  else if (loseSc == true) {
+    
+    drawLoseScreen(); 
     
   }
   
@@ -435,6 +461,22 @@ void readNoteFile() {
   }
 }
 
+void drawLoseScreen() {
+  
+  background(1); 
+  
+  //draw the lose icons
+  image(loseIcon, 200, 20); 
+  
+  //restart button and icon text for the button
+  fill(255); 
+  stroke(1); 
+  rect(restartX, restartY, restartW, restartH); 
+  
+  image(restartIcon, restartX-40, restartY-35); 
+  
+}
+
 float comboW = 120; 
 float comboH = 120; 
 
@@ -442,6 +484,7 @@ void drawGameScreen() {
   
   checkAccuracy(); 
   autoNoteRemoval(); 
+  checkLoseCondition(); 
   
   //Perform analysis for FFT
   fft.analyze(); 
@@ -619,6 +662,31 @@ void drawGameScreen() {
       perfect[i] = currentPerfect; 
       points[i] = currentPoints;
       combo[i] = currentCombo; 
+      
+      readNoteFile(); 
+      
+      //Reset the music
+      for (int j = 0; j < 6; j++) {
+        
+        if (songSelected[j] == true) {
+          
+          music[j].stop(); 
+          music[j].loop(); 
+          
+        }
+        
+      }
+      
+      //Reset all values
+      currentPoints = 0; 
+      currentPerfect = 0; 
+      currentGreat = 0; 
+      currentOk = 0; 
+      currentMiss = 0; 
+      currentAcc = 0; 
+      currentCombo = 0; 
+      missCombo = 0; 
+      totalNotesPlayed = 0; 
       
       //Store data to temporary storage
       statData.tempStore(clear, accuracy, perfect, great, ok, miss, points, combo); 
@@ -821,6 +889,18 @@ void drawMenuScreen() {
 
 }
 
+//Checks whether or not you lose based on the number of misses
+void checkLoseCondition() {
+  
+  if (missCombo >= 5) {
+    
+    gameSc = false;
+    loseSc = true; 
+    
+  }
+  
+}
+
 //Removes note if it passes the 800 pixels screen
 void autoNoteRemoval() {
   
@@ -844,6 +924,7 @@ void autoNoteRemoval() {
       currentMiss++; 
       currentCombo = 0; 
       totalNotesPlayed++; 
+      missCombo++; 
       
       outCol = notes.get(i).getCol(); 
       tempNote = notes.get(i); 
@@ -873,6 +954,7 @@ void autoNoteRemoval() {
       if (notes.get(i).isLong() && noteLongCheck[outCol-1] == false) {
         
         currentMiss++; 
+        missCombo++; 
         notes.remove(secondNoteIndex); 
         notes.remove(i); 
 
@@ -887,6 +969,7 @@ void autoNoteRemoval() {
         notes.remove(i); 
         notes.remove(firstNoteIndex); 
         currentMiss++; 
+        missCombo++; 
 
       }
       
@@ -970,7 +1053,8 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfSecond); 
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
-        
+        missCombo++; 
+
         println("miss"); 
         
         //Sets back the index of each note 
@@ -997,6 +1081,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("ok"); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1023,6 +1108,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("great"); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1049,6 +1135,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("perfect"); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1075,6 +1162,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("great"); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1101,6 +1189,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("ok"); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1126,6 +1215,7 @@ void checkNoteReleased(int col) {
         notes.remove(indexOfFirst); 
         noteLongCheck[col-1] = false; 
         println("miss"); 
+        missCombo++; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1184,6 +1274,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         println("miss"); 
         colorOfBox[col-1] = color(255, 0, 0); 
+        missCombo++; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1204,6 +1295,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("miss"); 
         colorOfBox[col-1] = color(255, 0, 0); 
+        missCombo++; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1229,6 +1321,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("ok"); 
         colorOfBox[col-1] = color(0, 255, 0); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1253,6 +1346,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("ok"); 
         colorOfBox[col-1] = color(0, 255, 0); 
+        missCombo = 0; 
 
       }
     }
@@ -1269,6 +1363,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("great"); 
         colorOfBox[col-1] = color(0, 0, 255); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1293,6 +1388,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("great"); 
         colorOfBox[col-1] = color(0, 0, 255); 
+        missCombo = 0; 
 
       }
     }
@@ -1309,6 +1405,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("perfect"); 
         colorOfBox[col-1] = color(255, 255, 0); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1333,6 +1430,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("perfect"); 
         colorOfBox[col-1] = color(255, 255, 0); 
+        missCombo = 0; 
 
       }
     }
@@ -1349,6 +1447,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("great"); 
         colorOfBox[col-1] = color(0, 0, 255); 
+        missCombo = 0; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1373,6 +1472,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("great"); 
         colorOfBox[col-1] = color(0, 0, 255); 
+        missCombo = 0; 
 
       }
     }
@@ -1388,7 +1488,8 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("ok"); 
         colorOfBox[col-1] = color(0, 255, 0); 
-        
+        missCombo = 0; 
+
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
           if (notes.get(i).getCol() == col) {
@@ -1412,6 +1513,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("ok"); 
         colorOfBox[col-1] = color(0, 255, 0); 
+        missCombo = 0; 
 
       }
     }
@@ -1426,6 +1528,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         println("miss"); 
         colorOfBox[col-1] = color(255, 0, 0); 
+        missCombo++; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1445,6 +1548,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = true;
         println("miss"); 
         colorOfBox[col-1] = color(255, 0, 0); 
+        missCombo++; 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1595,6 +1699,36 @@ void mousePressed() {
      music[5].loop(); 
      bd.input(music[5]); 
      fft.input(music[5]);
+  }
+  else if (loseSc == true && mouseX > restartX && mouseX < restartX + restartW && mouseY > restartY && mouseY < restartY + restartH) {
+     
+    loseSc = false; 
+    menuSc = true; 
+    
+    //Reset all values
+    currentPoints = 0; 
+    currentPerfect = 0; 
+    currentGreat = 0; 
+    currentOk = 0; 
+    currentMiss = 0; 
+    currentAcc = 0; 
+    currentCombo = 0; 
+    missCombo = 0; 
+    totalNotesPlayed = 0; 
+    
+    readNoteFile(); 
+    
+    for (int i = 0; i < 6; i++) {
+      
+      if (songSelected[i] == true) {
+        
+        music[i].stop(); 
+        music[i].loop();
+        
+      }
+      
+    }
+    
   }
   
 }
