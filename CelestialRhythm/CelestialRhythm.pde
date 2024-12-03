@@ -1,10 +1,35 @@
 import processing.sound.*;
+import org.gicentre.handy.*;
+
+//Handy renderer
+HandyRenderer h; 
 
 //All 6 music files
 SoundFile[] music = new SoundFile[6]; 
 
 //Sound effect for a beat
 SoundFile beat; 
+
+//FFT analyzer variable
+FFT fft; 
+
+//Beat detector in music
+BeatDetector bd; 
+
+//FFT bands
+int bands = 128; 
+
+//Smoothing factor
+float smoothingFactor = 0.2; 
+
+//Vector to store smoothed spectrum data
+float[] specData = new float[bands];
+
+//Scale for height of the music rectangles
+float scale = 0.5; 
+
+//Drawing variable for calculating width of the rectnagles
+float barWidth; 
 
 //Background for gameplay
 PImage gameBack[] = new PImage[6];
@@ -109,7 +134,7 @@ float selectSongW5 = 280;
 float selectSongH5 = 50;
 ArrayList<Note> notes = new ArrayList<Note>(); 
 
-int[] colorOfBox = new int[4];
+color[] colorOfBox = new color[4];
 
 boolean dpressed = false;
 boolean fpressed = false;
@@ -157,6 +182,12 @@ void setup() {
     colorOfBox[i] = 255;  
     
   }
+  
+  //Initialize handy renderer
+  h = new HandyRenderer(this);
+  
+  //Initialize the width of the rect depending on bands
+  barWidth = 150/float(bands); 
   
   //Initiate data storage
   statData = new DataStorage(clear, accuracy, perfect, great, ok, miss, points, combo); 
@@ -234,6 +265,14 @@ void setup() {
   songSelected[0] = true; 
   music[0].loop(); 
   
+  //Create the FFT analyzer and connect the playing soundfile
+  fft = new FFT(this, bands); 
+  
+  //Initiate beat detector
+  bd = new BeatDetector(this); 
+  bd.input(music[0]); 
+  
+  fft.input(music[0]); 
   //LoabubbleScale the images into the variables for further use
   titleImage = loadImage("Assets/CelestialRhythmTitle.png"); 
   startButtonImage = loadImage("Assets/StartButton.png"); 
@@ -396,10 +435,16 @@ void readNoteFile() {
   }
 }
 
+float comboW = 120; 
+float comboH = 120; 
+
 void drawGameScreen() {
   
   checkAccuracy(); 
   autoNoteRemoval(); 
+  
+  //Perform analysis for FFT
+  fft.analyze(); 
   
   //Song background; 
   for (int i = 0; i < songSelected.length; i++) {
@@ -411,7 +456,7 @@ void drawGameScreen() {
     }
     
   }
-  
+
   //Note path background
   fill(255, 255, 255, 120);
   quad(300, 0, 500, 0, 800, 800, 0, 800); 
@@ -484,10 +529,28 @@ void drawGameScreen() {
   fill(1, 1, 1, 10); 
   rect(0, 40, 800, 10); 
   
+  bd.sensitivity(5); 
+  
   //Draw the combo interface
-  stroke(1); 
-  fill(100, 255, 255); 
-  ellipse(680, 140, 120, 120); 
+  //Testing for fft for combo circle
+  beginShape(); 
+  for (int i = 0; i < bands; i++) {
+    
+    //Smooth FFT spectrum data by the smoothing factor
+    specData[i] += (fft.spectrum[i] - specData[i]) * smoothingFactor; 
+    
+    float r = map(specData[i]*2, 0, 1, 30, 70); 
+    float x = 650 + r*cos(i); 
+    float y = 150 + r*sin(i); 
+    fill(216, 253, 255); 
+    noStroke(); 
+    curveTightness(15); 
+    curveVertex(x, y); 
+    
+  }
+  endShape(); 
+  curveTightness(1); 
+
   
   String text = ""; 
   int textX = 0;
@@ -1120,6 +1183,7 @@ void checkNotePressed(int col) {
         noteLongCheck[col-1] = false;
         notes.remove(indexOfClosest); 
         println("miss"); 
+        colorOfBox[col-1] = color(255, 0, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1139,6 +1203,7 @@ void checkNotePressed(int col) {
         totalNotesPlayed++; 
         noteLongCheck[col-1] = true;
         println("miss"); 
+        colorOfBox[col-1] = color(255, 0, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1163,6 +1228,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("ok"); 
+        colorOfBox[col-1] = color(0, 255, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1186,6 +1252,7 @@ void checkNotePressed(int col) {
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
         println("ok"); 
+        colorOfBox[col-1] = color(0, 255, 0); 
 
       }
     }
@@ -1201,6 +1268,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("great"); 
+        colorOfBox[col-1] = color(0, 0, 255); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1224,6 +1292,7 @@ void checkNotePressed(int col) {
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
         println("great"); 
+        colorOfBox[col-1] = color(0, 0, 255); 
 
       }
     }
@@ -1239,6 +1308,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("perfect"); 
+        colorOfBox[col-1] = color(255, 255, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1262,6 +1332,7 @@ void checkNotePressed(int col) {
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
         println("perfect"); 
+        colorOfBox[col-1] = color(255, 255, 0); 
 
       }
     }
@@ -1277,6 +1348,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("great"); 
+        colorOfBox[col-1] = color(0, 0, 255); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1300,6 +1372,7 @@ void checkNotePressed(int col) {
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
         println("great"); 
+        colorOfBox[col-1] = color(0, 0, 255); 
 
       }
     }
@@ -1314,7 +1387,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("ok"); 
-
+        colorOfBox[col-1] = color(0, 255, 0); 
         
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1338,6 +1411,7 @@ void checkNotePressed(int col) {
         note.setSizeAcc(0); 
         noteLongCheck[col-1] = true;
         println("ok"); 
+        colorOfBox[col-1] = color(0, 255, 0); 
 
       }
     }
@@ -1351,6 +1425,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = false;
         println("miss"); 
+        colorOfBox[col-1] = color(255, 0, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1369,6 +1444,7 @@ void checkNotePressed(int col) {
         notes.remove(indexOfClosest); 
         noteLongCheck[col-1] = true;
         println("miss"); 
+        colorOfBox[col-1] = color(255, 0, 0); 
 
         //Sets back the index of each note 
         for (int i = 0; i < notes.size(); i++) {
@@ -1440,7 +1516,9 @@ void mousePressed() {
      
      songSelected[0] = true; 
      music[0].loop(); 
-     
+     bd.input(music[0]); 
+     fft.input(music[0]);
+  
   }
   else if (menuSc == true && mouseX > selectSongX2 && mouseX < selectSongX2 + selectSongW2 && mouseY > selectSongY2 && mouseY < selectSongY2 + selectSongH2) {
      readNoteFile(); 
@@ -1454,7 +1532,9 @@ void mousePressed() {
      
      songSelected[1] = true; 
      music[1].loop(); 
-
+     bd.input(music[1]); 
+     fft.input(music[1]);
+  
   }
   else if (menuSc == true && mouseX > selectSongX3 && mouseX < selectSongX3 + selectSongW3 && mouseY > selectSongY3 && mouseY < selectSongY3 + selectSongH3) {
      readNoteFile(); 
@@ -1468,7 +1548,8 @@ void mousePressed() {
      
      songSelected[2] = true; 
      music[2].loop(); 
-
+     bd.input(music[2]); 
+     fft.input(music[2]);
   }
   else if (menuSc == true && mouseX > selectSongX4 && mouseX < selectSongX4 + selectSongW4 && mouseY > selectSongY4 && mouseY < selectSongY4 + selectSongH4) {
      readNoteFile(); 
@@ -1482,7 +1563,8 @@ void mousePressed() {
      
      songSelected[3] = true; 
      music[3].loop(); 
-
+     bd.input(music[3]); 
+     fft.input(music[3]);
   }
   else if (menuSc == true && mouseX > selectSongX5 && mouseX < selectSongX5 + selectSongW5 && mouseY > selectSongY5 && mouseY < selectSongY5 + selectSongH5) {
      readNoteFile(); 
@@ -1496,7 +1578,8 @@ void mousePressed() {
      
      songSelected[4] = true; 
      music[4].loop(); 
-
+     bd.input(music[4]); 
+     fft.input(music[4]);
   }
   else if (menuSc == true && mouseX > selectSongX6 && mouseX < selectSongX6 + selectSongW6 && mouseY > selectSongY6 && mouseY < selectSongY6 + selectSongH6) {
      readNoteFile(); 
@@ -1510,7 +1593,8 @@ void mousePressed() {
      
      songSelected[5] = true; 
      music[5].loop(); 
-
+     bd.input(music[5]); 
+     fft.input(music[5]);
   }
   
 }
@@ -1539,7 +1623,6 @@ void keyPressed() {
   
   if (key == 'd' && dpressed == false) {
     
-    colorOfBox[0] = 180;
     checkNotePressed(1); 
     dpressed = true; 
     if (gameSc == true) {
@@ -1552,7 +1635,6 @@ void keyPressed() {
   
   if (key == 'f' && fpressed == false) {
 
-    colorOfBox[1] = 180;
     checkNotePressed(2); 
     fpressed = true; 
     if (gameSc == true) {
@@ -1564,7 +1646,6 @@ void keyPressed() {
   }
   if (key == 'j' && jpressed == false) {
     
-    colorOfBox[2] = 180;
     checkNotePressed(3); 
     jpressed = true; 
     if (gameSc == true) {
@@ -1576,7 +1657,6 @@ void keyPressed() {
   }
   if (key == 'k' && kpressed == false) {
     
-    colorOfBox[3] = 180;
     checkNotePressed(4); 
     kpressed = true; 
     if (gameSc == true) {
