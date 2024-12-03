@@ -579,8 +579,8 @@ void drawGameScreen() {
       
       fill(1); 
       text = "" + currentCombo;
-      textX = 670;
-      textY = 150;
+      textX = 640;
+      textY = 160;
       textSize(40);
 
     }
