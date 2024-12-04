@@ -1741,6 +1741,19 @@ void keyPressed() {
     gameSc = false;
     menuSc = true; 
     
+    //Reset all values
+    currentPoints = 0; 
+    currentPerfect = 0; 
+    currentGreat = 0; 
+    currentOk = 0; 
+    currentMiss = 0; 
+    currentAcc = 0; 
+    currentCombo = 0; 
+    missCombo = 0; 
+    totalNotesPlayed = 0; 
+    
+    readNoteFile(); 
+    
     //Stop the music from playing
     for (int i = 0; i < songSelected.length; i++) {
       
